@@ -133,8 +133,25 @@ Perguntas que guiam o preenchimento:
 -->
 **Quando se preenche:** no sábado (encontro 2, manhã).
 
-[o tipo mais simples que resolve, justificado pela dimensão
-do ambiente que o obriga]
+**Baseado em modelo.**
+
+O ambiente é parcialmente observável (seção 2), o que elimina o reativo
+simples: a leitura do momento não basta — uma máquina que falhou duas vezes
+na semana merece mais cuidado mesmo com a leitura de hoje normal. O agente
+mantém um estado interno mínimo: o histórico de falhas de cada máquina.
+
+Por que não um tipo acima: o ambiente é episódico e a decisão é uma
+classificação (risco, normas, bloqueio), não uma sequência de passos a
+planejar — por isso não é baseado em objetivos. O custo desigual dos erros
+(liberar sem bloqueio custa muito mais que bloquear sem precisar) é tratado,
+nesta versão, por regra fixa: na dúvida sobre a parte elétrica, recomenda o
+bloqueio ou escala ao supervisor. A função de utilidade com pesos fica para
+as restrições (seção 5). Aprendizagem fica para depois: exige registrar o
+desfecho de cada recomendação, o que o sistema ainda não faz.
+
+Na fronteira fluxo de trabalho × agente, o AMS é hoje um fluxo de trabalho:
+o código decide a sequência (lê a ordem → consulta → valida → registra), não
+o modelo. O problema tem caminho conhecido, e por isso essa é a escolha certa.
 
 ---
 
