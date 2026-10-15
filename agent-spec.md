@@ -100,8 +100,24 @@ Perguntas que guiam o preenchimento (uma por dimensão):
 -->
 **Quando se preenche:** no Laboratório 02, no sábado (encontro 2).
 
-[uma linha por dimensão: a classificação e a frase de
-justificativa — começando por observabilidade e determinismo]
+| Dimensão | Classificação | Justificativa |
+|---|---|---|
+| Observabilidade | Parcialmente observável | O agente não percebe se a máquina está energizada, nem o que foi feito nela antes, e a falha ainda não aconteceu — só enxerga a leitura do momento e o texto da ordem, que pode omitir a parte elétrica |
+| Determinismo | Estocástico | Duas máquinas com a mesma leitura podem ter desfechos diferentes: a falha é probabilidade, não certeza; e a própria consulta que gera a recomendação pode variar ou falhar |
+| Número de agentes | Agente único (com ressalva) | Técnico e supervisor recebem a recomendação e não disputam a decisão com o agente; a ressalva é que o técnico pode ignorar alertas — por isso a medida limita os alarmes falsos |
+| Episódico ou sequencial | Episódico | Cada ordem é avaliada sozinha: errar uma não muda a avaliação da seguinte. Mudaria para sequencial se a recomendação de uma ordem passasse a depender do desfecho da anterior |
+| Estático ou dinâmico | Semidinâmico | A máquina não muda durante a análise, mas o técnico está esperando: depois de certo tempo, a recomendação chega tarde demais para ser usada |
+| Discreto ou contínuo | Percepções contínuas, ações discretas | Temperatura, rotação, torque e desgaste variam sem degraus; a saída é contável — três níveis de risco, um conjunto de normas, bloquear ou não |
+| Conhecido ou desconhecido | Parcialmente conhecido | As normas estão documentadas; a relação entre a leitura dos sensores e a falha não é dada de antemão e precisa ser descoberta nos dados |
+
+**O que essas respostas obrigam no projeto:**
+
+- Parcialmente observável → guardar o histórico de falhas de cada máquina e escalar ao supervisor quando faltar informação.
+- Estocástico → risco expresso em níveis de probabilidade, nova tentativa quando a consulta falha e tempo máximo de espera.
+- Episódico → a avaliação usa um conjunto de ordens independentes (as 200 do PEAS), sem precisar avaliar trajetórias.
+- Semidinâmico → prazo de resposta declarado; passado o prazo, o técnico segue sem a recomendação.
+- Contínuo na entrada → os limites que separam baixo, médio e alto são decisão de projeto, a justificar.
+- Parcialmente conhecido → a relação sensor → falha vem da análise dos dados, não de regra escrita à mão.
 
 ---
 
