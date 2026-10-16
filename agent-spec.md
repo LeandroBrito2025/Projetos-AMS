@@ -227,5 +227,26 @@ Perguntas que guiam o preenchimento:
 -->
 **Quando se preenche:** no Laboratório 03, sábado à tarde (encontro 2).
 
-[os cinco componentes do seu subproblema: estado inicial,
-ações, transição, teste de objetivo, custo]
+A fatia do problema que é busca: em que ordem cumprir o roteiro de segurança
+antes de liberar a intervenção numa máquina. Caminho padrão: subproblema 3 do
+catálogo (roteiro de conformidade), copiado para `roteiro_ams.py` com os dados
+trocados pelos do AMS — a lógica é a do catálogo, sem alteração.
+
+| Componente | No AMS |
+|---|---|
+| Estado inicial | Nenhum item conferido, nenhuma pendência aberta |
+| Ações | Verificar um item ainda não verificado, ou resolver uma pendência aberta |
+| Transição | Verificar soma o item aos verificados e abre as pendências que ele revela; resolver tira a pendência das abertas |
+| Teste de objetivo | Todos os itens verificados e nenhuma pendência aberta — só então a intervenção é liberada |
+| Custo | Tempo da ação em minutos; verificar com pendência aberta custa o dobro, porque obriga a reconferir |
+
+O estado é o par (itens verificados, pendências abertas) — a situação, não a
+ordem em que as coisas foram feitas. Teste de sanidade: seis verificações
+verdes nas duas instâncias (pequena: 5 itens, 3 pendências; maior: 10 itens,
+5 pendências).
+
+Simplificação: cada item revela sempre as mesmas pendências. No mundo real,
+verificar pode ou não revelar um problema — o ambiente é estocástico (seção 2).
+
+O que não é busca no AMS: classificar o risco de falha é classificação a
+partir dos sensores, não sequência de passos; indicar as normas é consulta.
