@@ -38,20 +38,13 @@ para qualquer empresa é uma linha genérica — o exemplo do seu segmento
 
 **Performance:**
 
-Medida principal: das ordens de serviço em que a máquina de fato falhou,
-quantas o agente classificou como risco alto.
-Conta: ordens com falha real marcadas como "alto" ÷ total de ordens com
-falha real.
-Conjunto: 200 ordens fixas tiradas da base AI4I 2020, incluindo todas as de
-falha real; sempre as mesmas, para comparar versões.
-Sucesso: acima de 90%. Valor de hoje: a medir na linha de base.
+Medida principal: das máquinas que de fato falharam, a fração que o agente alarmou (decidiu inspecionar ou parar). Conta: casos com falha real alarmados ÷ total de casos com falha real. Conjunto: os 30 casos rotulados do conjunto de reserva do pacote D2-06 (11 falharam, 19 não) — sempre os mesmos, para comparar versões. Sucesso: no mínimo 90%. Valor de hoje (linha de base): 9 de 11 = 82%.
 
-Contra a trapaça: marcar tudo como "alto" acertaria 100% sem decidir nada.
-Por isso, das ordens em que a máquina NÃO falhou, no máximo 20% podem
-receber "alto" ou bloqueio — alarme demais faz o técnico ignorar o alarme.
+Contra a trapaça: alarmar tudo acertaria 100% sem decidir nada. Por isso, das máquinas que NÃO falharam, no máximo 20% podem ser alarmadas. Valor de hoje: 4 de 19 = 21%.
 
-Segurança: nenhuma intervenção que precisa de bloqueio pode ser liberada sem
-bloqueio. Um único caso reprova a versão.
+Segurança: nenhuma intervenção que precisa de bloqueio pode ser liberada sem bloqueio. Um único caso reprova a versão.
+
+Revisão (N2): o conjunto passou das "200 ordens da AI4I" para os 30 casos da reserva, porque é sobre eles que a linha de base foi medida (a AI4I tem colunas diferentes das que o agente lê); o "valor de hoje", antes "a medir", agora tem o número medido.
 
 **Environment:**
 
@@ -170,9 +163,15 @@ Perguntas que guiam o preenchimento:
 operacional completa — primária, secundárias, conjunto e limiar — é item da
 Atividade Orientada.
 
-[métrica primária e duas secundárias, cada uma com: como se
-calcula, sobre qual conjunto, qual o limiar de sucesso e o
-valor de hoje]
+Primária — falhas avisadas. Como se calcula: percorrer os casos em ordem cronológica; separar os que têm falhou_depois = 1; contar em quantos o agente decidiu inspecionar ou parar; dividir pelo total desses casos. Conjunto: os 30 casos da reserva (lab06/casos-de-reserva.csv, 02 a 20/03/2026). Sucesso: no mínimo 90%. Valor de hoje: 9/11 = 82%.
+
+Secundária — alarmes falsos. Casos com falhou_depois = 0 em que o agente decidiu inspecionar ou parar, divididos pelo total desses casos. Meta: no máximo 20%. Valor de hoje: 4/19 = 21%. Pega a trapaça de alarmar tudo para acertar a primária.
+
+Secundária — acerto da decisão. Decisões iguais ao rótulo divididas pelo total (a saída do medir.py). Meta: no mínimo 90%. Valor de hoje: 25/30 = 83%. Pega o que as duas anteriores não veem: mandar parar quando bastava inspecionar.
+
+A restrição de segurança (nenhuma liberação sem bloqueio quando exigido) ainda não é medida: o conjunto de reserva não tem rótulo de bloqueio. Fica registrada como medida a construir na D7.
+
+Revisão (N2): seção nova, escrita depois da devolutiva do E3, que pediu métrica com fórmula, conjunto e limiar — e com o valor de hoje medido.
 
 ---
 
@@ -189,9 +188,15 @@ Perguntas que guiam o preenchimento:
 -->
 **Quando se preenche:** na Atividade Orientada.
 
-[latência aceitável, custo aceitável, o que o agente jamais
-pode fazer sozinho, e a troca qualidade × custo que você
-aceita — com um exemplo numérico]
+Latência: a recomendação deve chegar em até 10 segundos. O técnico tem pouco tempo entre uma ordem e outra (ambiente semidinâmico, seção 2): acima de 30 segundos ela chega tarde, e o técnico segue sem ela.
+
+Custo: até R$ 0,05 por ordem avaliada, somando as chamadas ao modelo.
+
+O que o agente jamais faz sozinho: liberar a intervenção (seção 6). O efeito não se desfaz, e o pior cenário é um acidente com o técnico.
+
+A troca que aceito: perder até 3 pontos do acerto da decisão para cortar o custo pela metade — por exemplo, 25/30 a R$ 0,02 por ordem vale mais que 26/30 a R$ 0,05. Mas não aceito perder nenhum ponto de falhas avisadas por economia: deixar passar uma máquina que vai falhar custa muito mais que qualquer chamada, e o termo de risco pesa mais que os outros.
+
+Revisão (N2): seção nova. A troca com exemplo numérico segue o encontro 4: o termo de risco (erro irreversível) tem peso maior que custo e latência.
 
 ---
 
@@ -217,12 +222,14 @@ modelo da tabela e dois exemplos preenchidos.
 | Classificar o risco e indicar as normas | Leitura + histórico + descrição | Nível de risco (baixo/médio/alto) e normas aplicáveis (NR-10/12/35) | Sim — só calcula, não muda o mundo | Falso negativo: máquina que vai falhar sai como risco baixo, ou a NR-10 fica de fora numa intervenção elétrica. Falso positivo: parada à toa e alarme que o técnico passa a ignorar |
 | Comunicar a recomendação ao técnico | Risco + normas + bloqueio sim/não + justificativa | Mensagem curta ao técnico | Não — a mensagem lida orienta a ação do técnico e não se recolhe | Comunicação: "não precisa bloquear" quando precisava expõe o técnico a energia na máquina; justificativa confusa faz a recomendação ser ignorada |
 | Escalar ao supervisor de segurança | Ordem + o que já foi avaliado | Caso na fila do supervisor | Sim — o caso volta para o fluxo normal | Escalar demais cria fadiga e atrasa o serviço; escalar sem o que já foi avaliado obriga o supervisor a refazer tudo |
-| Registrar a avaliação | Ordem + decisão + justificativa | Registro para auditoria | Parcialmente — o registro pode ser corrigido, mas a falta dele não se recupera depois | Registro incompleto impede o supervisor de auditar a decisão e apagar a responsabilidade num acidente |
+| Registrar a avaliação | Ordem + decisão + justificativa | Registro para auditoria | Parcialmente — o registro pode ser corrigido, mas a falta dele não se recupera depois | Registro incompleto impede o supervisor de auditar a decisão e deixa a responsabilidade indefinida num acidente |
 | Liberar a intervenção | Ordem + bloqueio confirmado | Ordem liberada; o técnico começa o serviço | Não — o serviço começa, e um acidente não se desfaz | Escrita, risco alto: liberar máquina energizada ou sem proteção pode causar choque elétrico, prensagem ou amputação do técnico |
 
 **Quem executa cada ação:** as ações de leitura e cálculo (ler a ordem, consultar o histórico, classificar o risco) e o registro, o agente executa sozinho. Comunicar a recomendação e escalar ao supervisor, o agente executa sozinho, porque são as formas de pôr um humano no circuito. Liberar a intervenção exige confirmação humana: o técnico confirma o bloqueio e, nos casos de risco alto ou de parte elétrica, o supervisor de segurança aprova.
 
 **O que o agente JAMAIS executa sozinho:** liberar a intervenção. O efeito não se desfaz e o pior cenário é um acidente com o técnico. Por isso a entrada da ação já exige o "bloqueio confirmado", e a liberação fica sempre com um humano.
+
+Revisão (N2): seção nova (Laboratório 07). Seguindo a devolutiva do E3, inclui as ações que alteram o mundo (liberar a intervenção, comunicar ao técnico) e as colunas de reversibilidade e risco com o cenário concreto.
 
 ---
 
@@ -261,3 +268,19 @@ verificar pode ou não revelar um problema — o ambiente é estocástico (seç�
 
 O que não é busca no AMS: classificar o risco de falha é classificação a
 partir dos sensores, não sequência de passos; indicar as normas é consulta.
+
+Resultado (Labs 04 e 05): o custo uniforme achou o roteiro ótimo de 83 minutos, contra 112 da largura, com os mesmos 15 passos; a A* com a heurística admissível achou os mesmos 83 expandindo 33.185 nós, contra 45.352 do custo uniforme (27% menos). Tabela completa em relatorio-de-desempenho.md.
+
+---
+
+## Registro de revisões (o que mudou e por quê)
+
+| Seção | O que mudou | Por quê |
+|---|---|---|
+| 1. PEAS | Conjunto da medida: de 200 ordens da AI4I para os 30 casos da reserva; valor de hoje preenchido (82% e 21%) | A linha de base foi medida na reserva; sem o valor de hoje, não há como saber se o número novo é bom |
+| 2. Ambiente | Sem mudança | A linha de base confirmou a observabilidade parcial (C07, C08) e o ambiente estocástico (C11, C22) |
+| 3. Tipo | Sem mudança | Baseado em modelo foi confirmado; a revisão aponta que a memória deve ser por máquina, não por tipo (C10) |
+| 4. Medida | Seção nova: primária, duas secundárias, conjunto, metas e valores | Devolutiva do E3: medida com fórmula, conjunto e limiar |
+| 5. Restrições | Seção nova, com a troca qualidade × custo em número | Encontro 4: o custo de pensar e o peso do risco |
+| 6. Catálogo | Seção nova, com ações de escrita e comunicação | Devolutiva do E3: ações que alteram o mundo, reversibilidade e risco |
+| 7. Busca | Acrescentado o resultado das buscas | Labs 04 e 05 | 
