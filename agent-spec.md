@@ -210,8 +210,19 @@ Perguntas que guiam o preenchimento:
 **Quando se preenche:** na Atividade Orientada — o pacote `D2-07` traz o
 modelo da tabela e dois exemplos preenchidos.
 
-[tabela: nome · entrada · saída · é reversível? · risco se
-errar — ações de leitura e de escrita]
+| Ação | Entrada | Saída | É reversível? | Risco se errar |
+|---|---|---|---|---|
+| Ler a ordem de serviço | Número da ordem | Máquina, leitura dos sensores, descrição do serviço | Sim — só lê | Leitura com sensor falhando ou descrição vaga (sem citar a parte elétrica) leva a classificação errada; o técnico recebe recomendação baseada em dado ruim |
+| Consultar o histórico de falhas da máquina | Código da máquina | Falhas recentes da máquina | Sim — só lê | Histórico desatualizado subestima o risco: a máquina que já falhou parece nova (o erro de C07 e C08 da linha de base) |
+| Classificar o risco e indicar as normas | Leitura + histórico + descrição | Nível de risco (baixo/médio/alto) e normas aplicáveis (NR-10/12/35) | Sim — só calcula, não muda o mundo | Falso negativo: máquina que vai falhar sai como risco baixo, ou a NR-10 fica de fora numa intervenção elétrica. Falso positivo: parada à toa e alarme que o técnico passa a ignorar |
+| Comunicar a recomendação ao técnico | Risco + normas + bloqueio sim/não + justificativa | Mensagem curta ao técnico | Não — a mensagem lida orienta a ação do técnico e não se recolhe | Comunicação: "não precisa bloquear" quando precisava expõe o técnico a energia na máquina; justificativa confusa faz a recomendação ser ignorada |
+| Escalar ao supervisor de segurança | Ordem + o que já foi avaliado | Caso na fila do supervisor | Sim — o caso volta para o fluxo normal | Escalar demais cria fadiga e atrasa o serviço; escalar sem o que já foi avaliado obriga o supervisor a refazer tudo |
+| Registrar a avaliação | Ordem + decisão + justificativa | Registro para auditoria | Parcialmente — o registro pode ser corrigido, mas a falta dele não se recupera depois | Registro incompleto impede o supervisor de auditar a decisão e apagar a responsabilidade num acidente |
+| Liberar a intervenção | Ordem + bloqueio confirmado | Ordem liberada; o técnico começa o serviço | Não — o serviço começa, e um acidente não se desfaz | Escrita, risco alto: liberar máquina energizada ou sem proteção pode causar choque elétrico, prensagem ou amputação do técnico |
+
+**Quem executa cada ação:** as ações de leitura e cálculo (ler a ordem, consultar o histórico, classificar o risco) e o registro, o agente executa sozinho. Comunicar a recomendação e escalar ao supervisor, o agente executa sozinho, porque são as formas de pôr um humano no circuito. Liberar a intervenção exige confirmação humana: o técnico confirma o bloqueio e, nos casos de risco alto ou de parte elétrica, o supervisor de segurança aprova.
+
+**O que o agente JAMAIS executa sozinho:** liberar a intervenção. O efeito não se desfaz e o pior cenário é um acidente com o técnico. Por isso a entrada da ação já exige o "bloqueio confirmado", e a liberação fica sempre com um humano.
 
 ---
 
